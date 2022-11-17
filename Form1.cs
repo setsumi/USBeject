@@ -279,6 +279,7 @@ namespace USBeject
                 if (pid > 0)
                     KillProcess(pid);
             }
+            //System.Media.SystemSounds.Hand.Play();//debug
         }
 
         void KillProcess(int pid)
@@ -407,6 +408,7 @@ namespace USBeject
             {
                 case Keys.Enter:
                     btnKill_Click(null, null);
+                    e.Handled = e.SuppressKeyPress = true;
                     break;
             }
         }
