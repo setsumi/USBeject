@@ -220,31 +220,40 @@ namespace USBeject
                         node = node.NextSibling;
                         foreach (XmlNode n in node.ChildNodes)
                         {
-                            if (!n.Attributes["Name"].Value.Contains("Length"))
-                            {
-                                AppendText(null, n.Attributes["Name"].Value + ": " + n.InnerText);
+                            // skip useless fields
+                            if (n.Attributes["Name"].Value.Contains("Length")) continue;
 
-                                if (n.Attributes["Name"].Value == "DeviceInstance")
-                                {
-                                    USBDeviceInfo di = GetUSBDevice(n.InnerText);
-                                    if (di != null)
+                            switch (n.Attributes["Name"].Value)
+                            {
+                                case "ProcessName":
                                     {
-                                        AppendText(null, "DeviceName: " + di.Name
-                                            + " (" + di.Description + ")");
+                                        string driveLetterPath = DevicePathMapper.FromDevicePath(n.InnerText);
+                                        _processName = driveLetterPath != null ? driveLetterPath : n.InnerText;
                                     }
-                                    else
+                                    AppendText(null, n.Attributes["Name"].Value + ": " + _processName);
+                                    break;
+                                case "DeviceInstance":
+                                    AppendText(null, n.Attributes["Name"].Value + ": " + n.InnerText);
+                                    // actual device state
                                     {
-                                        AppendText(null, "DEVICE NOT FOUND");
+                                        USBDeviceInfo di = GetUSBDevice(n.InnerText);
+                                        if (di != null)
+                                        {
+                                            AppendText(null, "DeviceName: " + di.Name
+                                                + " (" + di.Description + ")");
+                                        }
+                                        else
+                                        {
+                                            AppendText(null, "DEVICE NOT FOUND");
+                                        }
                                     }
-                                }
-                                else if (n.Attributes["Name"].Value == "ProcessId")
-                                {
+                                    break;
+                                case "ProcessId":
                                     PID = n.InnerText;
-                                }
-                                else if (n.Attributes["Name"].Value == "ProcessName")
-                                {
-                                    _processName = n.InnerText;
-                                }
+                                    goto default;
+                                default:
+                                    AppendText(null, n.Attributes["Name"].Value + ": " + n.InnerText);
+                                    break;
                             }
                         }
                     }
