@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
@@ -9,8 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -67,6 +63,7 @@ namespace USBeject
 
         string _processName = "";
         bool _initForm = true;
+        FormWindowState _lastWindowState = FormWindowState.Normal;
 
         public FormMain()
         {
@@ -141,22 +138,23 @@ namespace USBeject
 
         private void FormMain_Shown(object sender, EventArgs e)
         {
+            btnRefresh_Click(null, null);
+            timer1.Start();
+        }
+
+        private void FormMain_Load(object sender, EventArgs e)
+        {
+            lblProcessName.Text = "";
+
             if (Properties.Settings.Default.winWidth > 0)
                 this.Width = Properties.Settings.Default.winWidth;
             if (Properties.Settings.Default.winHeight > 0)
                 this.Height = Properties.Settings.Default.winHeight;
             if (Properties.Settings.Default.winMaximized)
                 this.WindowState = FormWindowState.Maximized;
-
-            ScrollToBottom();
+            _lastWindowState = this.WindowState;
 
             _initForm = false;
-        }
-
-        private void FormMain_Load(object sender, EventArgs e)
-        {
-            GetEvents();
-            timer1.Start();
         }
 
         void ScrollToBottom()
@@ -387,7 +385,6 @@ namespace USBeject
             Properties.Settings.Default.Save();
         }
 
-        FormWindowState _lastWindowState = FormWindowState.Normal;
         private void FormMain_Resize(object sender, EventArgs e)
         {
             if (_initForm) return;
@@ -420,6 +417,11 @@ namespace USBeject
                     e.Handled = e.SuppressKeyPress = true;
                     break;
             }
+        }
+
+        private void btnEjectDialog_Click(object sender, EventArgs e)
+        {
+            Process.Start("RunDll32.exe", "shell32.dll,Control_RunDLL hotplug.dll");
         }
     }
 }
